@@ -24,20 +24,20 @@ pipeline {
         stage('Archive') {
             steps {
                 // Requerimiento 3: Archivar los artefactos
-                archiveArtifacts artifacts: "*/target/.jar", fingerprint: true
+                archiveArtifacts artifacts: "**/target/*.jar", fingerprint: true
             }
         }
         stage('Test') {
             steps {
                 // Requerimiento 4: Ejecutar los tests de Maven
                 sh "mvn test"
-                junit '*/target/surefire-reports/TEST-.xml'
+                junit '**/target/surefire-reports/TEST-*.xml'
             }
         }
         stage('Validate') {
             steps {
                 // Requerimiento 5: Ejecutar el pipeline desde el repositorio
-                sh "echo "
+                sh "echo Pipeline finalizado sin errores"
             }
         }
     }
