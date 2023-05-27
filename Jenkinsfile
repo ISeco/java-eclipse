@@ -37,7 +37,7 @@ pipeline {
         stage('Validate') {
             steps {
                 // Requerimiento 5: Ejecutar el pipeline desde el repositorio
-                sh "echo Pipeline finalizado sin errores"
+                sh "echo Pipeline finalizado sin errores desde webhook"
             }
         }
     }
