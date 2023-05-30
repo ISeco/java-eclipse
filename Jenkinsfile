@@ -70,7 +70,7 @@ pipeline {
         stage('Validate') {
             steps {
                 // Requerimiento 5: Ejecutar el pipeline desde el repositorio
-                sh "echo Pipeline finalizado sin errores desde webhook"
+                sh "echo Pipeline finalizado con sonarqube"
             }
         }
     }
