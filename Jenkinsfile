@@ -4,10 +4,6 @@ pipeline {
         maven 'jenkins-maven' 
         jdk 'Java 11' 
     }
-    def COLOR_MAP = [
-        SUCCESS: 'good',
-        FAILURE: 'danger',
-    ]
     stages {
         stage('Checkout') {
             steps {
@@ -16,56 +12,35 @@ pipeline {
                     branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'git@github.com:ToboCodes/portfolioProject.git']]
                 ])
-            }
-            post {
-                always {
-                    echo 'Slack Notification'
-                    slackSend (
-                        channel: '#integracion-de-slack-a-jenkins',
-                        color: COLOR_MAP[currentBuild.currentResult],
-                        message: "*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}"
-                    )
-                }
+                notifySlack('Checkout')
             }
         }
         stage('Build') {
             steps {
                 sh 'mvn -B -DskipTests clean package'
+                notifySlack('Build')
             }
         }
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: "**/target/*.jar", fingerprint: true
+                notifySlack('Archive')
             }
         }
         stage('Test') {
             steps {
                 sh "mvn test"
                 junit '**/target/surefire-reports/TEST-*.xml'
+                notifySlack('Test')
             }
         }
-        // stage('Sonar Scanner') {
-        //     steps {
-        //         script {
-        //             def sonarqubeScannerHome = tool name: 'sonar', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-        //             withCredentials([string(credentialsId: 'sonar', variable: 'sonarLogin')]) {
-        //                 sh "${sonarqubeScannerHome}/bin/sonar-scanner -e -Dsonar.host.url=http://SonarQube:9000 -Dsonar.login=${sonarLogin} -Dsonar.projectName=gs-gradle -Dsonar.projectVersion=${env.BUILD_NUMBER} -Dsonar.projectKey=GS -Dsonar.sources=src/main/java/com/kibernumacademy/miapp -Dsonar.tests=src/test/java/com/kibernumacademy/miapp -Dsonar.language=java -Dsonar.java.binaries=."
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Quality Gate'){
-        //     steps{
-        //         timeout(time:1, unit:'HOURS'){
-        //             waitForQualityGate abortPipeline:true
-        //         }
-        //     }
-        // }
+        
         stage('Sonar Scanner') {
             steps {
                 withSonarQubeEnv('SonarQube') { 
                     sh 'mvn sonar:sonar -Dsonar.projectKey=GS -Dsonar.sources=src/main/java/com/kibernumacademy/miapp -Dsonar.tests=src/test/java/com/kibernumacademy/miapp -Dsonar.java.binaries=.'
                 }
+                notifySlack('Sonar Scanner')
             }
         }
         stage('Quality Gate'){
@@ -73,6 +48,7 @@ pipeline {
                 timeout(time:1, unit:'HOURS'){
                     waitForQualityGate abortPipeline:true
                 }
+                notifySlack('Quality Gate')
             }
         }
         stage('Nexus Upload') {
@@ -92,7 +68,22 @@ pipeline {
                         type: 'pom']
                     ]
                 )
+                notifySlack('Nexus Upload')
             }
         }
     }
+}
+
+def notifySlack(String stageName) {
+    def COLOR_MAP = [
+        SUCCESS: 'good',
+        FAILURE: 'danger',
+    ]
+
+    echo 'Slack Notification'
+    slackSend (
+        channel: '#integracion-de-slack-a-jenkins',
+        color: COLOR_MAP[currentBuild.currentResult],
+        message: "*${stageName} - ${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}"
+    )
 }
