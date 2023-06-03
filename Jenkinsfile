@@ -4,6 +4,10 @@ pipeline {
         maven 'jenkins-maven' 
         jdk 'Java 11' 
     }
+    def COLOR_MAP = [
+        SUCCESS: 'good',
+        FAILURE: 'danger',
+    ]
     stages {
         stage('Checkout') {
             steps {
@@ -12,6 +16,16 @@ pipeline {
                     branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'git@github.com:ToboCodes/portfolioProject.git']]
                 ])
+            }
+            post {
+                always {
+                    echo 'Slack Notification'
+                    slackSend (
+                        channel: '#integracion-de-slack-a-jenkins',
+                        color: COLOR_MAP[currentBuild.currentResult],
+                        message: "*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}"
+                    )
+                }
             }
         }
         stage('Build') {
@@ -78,28 +92,6 @@ pipeline {
                         type: 'pom']
                     ]
                 )
-            }
-        }
-        stage('Slack Notification') {
-            steps {
-                script {                    
-                    def COLOR_MAP = [
-                        SUCCESS: 'good',
-                        FAILURE: 'danger',
-                    ]
-
-                    echo 'Slack Notification'
-                    slackSend (
-                        channel: '#integracion-de-slack-a-jenkins',
-                        color: COLOR_MAP[currentBuild.currentResult],
-                        message: "*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}"
-                    )
-                }
-            }
-        }
-        stage('Validate') {
-            steps {
-                sh "echo Pipeline finalizado con nexus"
             }
         }
     }
