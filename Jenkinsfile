@@ -12,26 +12,42 @@ pipeline {
                     branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'git@github.com:ToboCodes/portfolioProject.git']]
                 ])
-                notifySlack('Checkout')
+            }
+            post {
+                failure {
+                    notifySlack('Checkout')
+                }
             }
         }
         stage('Build') {
             steps {
                 sh 'mvn -B -DskipTests clean package'
-                notifySlack('Build')
+            }
+            post {
+                failure {
+                    notifySlack('Build')
+                }
             }
         }
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: "**/target/*.jar", fingerprint: true
-                notifySlack('Archive')
+            }
+            post {
+                failure {
+                    notifySlack('Archive')
+                }
             }
         }
         stage('Test') {
             steps {
                 sh "mvn test"
                 junit '**/target/surefire-reports/TEST-*.xml'
-                notifySlack('Test')
+            }
+            post {
+                failure {
+                    notifySlack('Test')
+                }
             }
         }
         
@@ -40,7 +56,11 @@ pipeline {
                 withSonarQubeEnv('SonarQube') { 
                     sh 'mvn sonar:sonar -Dsonar.projectKey=GS -Dsonar.sources=src/main/java/com/kibernumacademy/miapp -Dsonar.tests=src/test/java/com/kibernumacademy/miapp -Dsonar.java.binaries=.'
                 }
-                notifySlack('Sonar Scanner')
+            }
+            post {
+                failure {
+                    notifySlack('Sonar Scanner')
+                }
             }
         }
         stage('Quality Gate'){
@@ -48,7 +68,11 @@ pipeline {
                 timeout(time:1, unit:'HOURS'){
                     waitForQualityGate abortPipeline:true
                 }
-                notifySlack('Quality Gate')
+            }
+            post {
+                failure {
+                    notifySlack('Quality Gate')
+                }
             }
         }
         stage('Nexus Upload') {
@@ -68,7 +92,11 @@ pipeline {
                         type: 'pom']
                     ]
                 )
-                notifySlack('Nexus Upload')
+            }
+            post {
+                always {
+                    notifySlack('Nexus Upload')
+                }
             }
         }
     }
