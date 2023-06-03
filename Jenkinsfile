@@ -81,16 +81,18 @@ pipeline {
             }
         }
         stage('Slack Notification') {
-            def COLOR_MAP = [
-                'SUCCESS': 'good',
-                'FAILURE': 'danger',
-            ]
-            post {
-                always {
-                    echo 'Slack Notification'
-                    slackSend channel: '#integracion-de-slack-a-jenkins',
-                    color: COLOR_MAP[currentBuild.currentResult],
-                    message: '*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}'
+            steps {
+                def COLOR_MAP = [
+                    SUCCESS: 'good',
+                    FAILURE: 'danger',
+                ]
+                post {
+                    always {
+                        echo 'Slack Notification'
+                        slackSend channel: '#integracion-de-slack-a-jenkins',
+                        color: COLOR_MAP[currentBuild.currentResult],
+                        message: '*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}'
+                    }
                 }
             }
         }
