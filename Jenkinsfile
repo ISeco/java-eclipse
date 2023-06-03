@@ -82,19 +82,18 @@ pipeline {
         }
         stage('Slack Notification') {
             steps {
-                post {
-                    script {                    
-                        def COLOR_MAP = [
-                            SUCCESS: 'good',
-                            FAILURE: 'danger',
-                        ]
-                    }
-                    always {
-                        echo 'Slack Notification'
-                        slackSend channel: '#integracion-de-slack-a-jenkins',
+                script {                    
+                    def COLOR_MAP = [
+                        SUCCESS: 'good',
+                        FAILURE: 'danger',
+                    ]
+
+                    echo 'Slack Notification'
+                    slackSend (
+                        channel: '#integracion-de-slack-a-jenkins',
                         color: COLOR_MAP[currentBuild.currentResult],
-                        message: '*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}'
-                    }
+                        message: "*${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}"
+                    )
                 }
             }
         }
