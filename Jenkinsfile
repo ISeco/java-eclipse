@@ -94,7 +94,10 @@ pipeline {
                 )
             }
             post {
-                always {
+                success {
+                    notifySlack('Pipeline ejecutado correctamente!')
+                }
+                failure {
                     notifySlack('Nexus Upload')
                 }
             }
