@@ -115,6 +115,6 @@ def notifySlack(String stageName) {
     slackSend (
         channel: '#integracion-de-slack-a-jenkins',
         color: COLOR_MAP[currentBuild.currentResult],
-        message: "*${stageName} - ${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_URL}"
+        message: "${stageName} - ${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n Detalles: ${env.BUILD_URL}"
     )
 }
