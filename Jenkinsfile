@@ -80,6 +80,22 @@ pipeline {
                 )
             }
         }
+        stage('Slack Notification') {
+            def COLOR_MAP = [
+                ‘SUCCESS’: ‘good’,
+                ‘FAILURE’:’danger’,
+            ]
+            post {
+                always {
+                    echo ‘Slack Notification’
+                    slackSend channer: ‘#time-tracker-ci’,
+                    color: COLOR_MAP[currentBuild.currentResult],
+                    message: “*${currentBuild.currentResult}: Job ${env.JOB_
+                    NAME} build ${env.BUILD_NUMBER}\n More Info at: ${env.BUILD_
+                    URL}”
+                }
+            }
+        }
         stage('Validate') {
             steps {
                 sh "echo Pipeline finalizado con nexus"
